@@ -1,18 +1,14 @@
-# Noise and Transfer Function Analysis
+# JohnsonNoise: Noise and Transfer Function Analysis
 
-This repo contains data and analysis scripts for an experiment at the University of Western Australia demonstrating Johnson Noise. The project focuses on characterizing the transfer function and noise characteristics of an amplifier/circuit using various resistor values.
+![Extracted Noise Total](images/extracted_noise_total.png)
+
+This repository contains data and analysis scripts for an experiment conducted at the University of Western Australia to characterize **Johnson-Nyquist noise**. The plot above displays the final extracted input-referred noise spectral density ($S_{Total}$) across various resistor values, compared directly against theoretical thermal noise predictions ($4k_BTR$).
 
 ## Project Overview
 
 The objective of this project is to:
 1.  **Fit the Transfer Function**: Determine the frequency response $A(f)$ and $H(f, R, C_0)$ parameters of the measurement system.
-2.  **Extract Noise Levels**: Calculate the input-referred noise spectral density ($S_{Total}$) equivalent to the Johnson Noise of the Resistors + Current Noise from a Low-Noise Amplifier. Repeated for various resistor values and compared them with theoretical thermal noise ($4k_BTR$).
-## Results
-
-### Extracted Noise Spectral Density
-Below is the final extracted input-referred noise spectral density ($S_{Total}$) for various resistor values, compared against the theoretical thermal noise floor ($4k_BTR$).
-
-![Extracted Noise Total](images/extracted_noise_total.png)
+2.  **Extract Noise Levels**: Calculate the input-referred noise spectral density ($S_{Total}$) equivalent to the Johnson Noise of the Resistors plus the Current Noise from a Low-Noise Amplifier. 
 
 ## File Structure
 
@@ -26,11 +22,10 @@ Below is the final extracted input-referred noise spectral density ($S_{Total}$)
 - `Resistor_Values.txt`: Measured resistance values for each run.
 
 ### Images Directory (`images/`)
-- `extracted_noise_total.png`: Plot of input-referred noise spectral density.
+- `extracted_noise_total.png`: Main results plot (shown above).
 - `A_Transfer_Function.png`: System transfer function $A(f)$ fit.
 - `transfer_function_000_to_008.png`: Overview of all measured transfer functions.
 - `noise_floor_009.png`: Baseline noise floor.
-
 
 ## Getting Started
 
@@ -41,18 +36,16 @@ pip install numpy pandas matplotlib scipy
 ```
 
 ### Running the Analysis
-To extract the noise levels and generate the summary plot:
+To perform the full analysis and regenerate all plots in the `images/` folder:
 ```bash
-python extract_noise.py
-```
-To view the transfer function fitting parameters:
-```bash
-python fit_transfer_func.py
+python generate_plots.py
 ```
 
 ## Physics Context
 The analysis follows the theoretical model:
 $$H(f, R, C_0) = \frac{A_0 \cdot \frac{f}{f_1}}{\sqrt{1 + \left(\frac{f}{f_1}\right)^2} \sqrt{1 + \left(\frac{f}{f_2}\right)^2} \sqrt{1 + (2\pi f R C_0)^2}}$$
-Input-referred noise is extracted using:
+
+Input-referred noise is extracted by subtracting the system noise floor and dividing by the squared transfer function:
 $$S_{Total}(f) = \frac{S_{Out}(f) - S_{Floor}(f)}{|H(f)|^2}$$
+
 Comparison with thermal noise is made using the formula $S_{Th} = 4k_BT R$.
