@@ -1,6 +1,10 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
+import os
+
+# Configuration
+DATA_DIR = "data"
 
 # Formula: A(f) = A_0 * (f/f1) / (sqrt(1+(f/f1)^2) * sqrt(1+(f/f2)^2))
 def transfer_func_A(f, A_0, f1, f2):
@@ -14,11 +18,13 @@ def transfer_func_H(f, R, C_0, A_0, f1, f2):
 
 def get_fit_params():
     # Load Measured Resistor Values
-    resistor_df = pd.read_csv("Resistor_Values.txt", sep='\s+', comment='#', names=['Run_ID', 'R_val'])
+    resistor_path = os.path.join(DATA_DIR, "Resistor_Values.txt")
+    resistor_df = pd.read_csv(resistor_path, sep='\s+', comment='#', names=['Run_ID', 'R_val'])
     resistor_actuals = dict(zip(resistor_df['Run_ID'].astype(int), resistor_df['R_val']))
 
     # Fit for A(f) system parameters using Data000 
-    df0 = pd.read_csv("Data000Freq++.txt", sep='\s+')
+    data0_path = os.path.join(DATA_DIR, "Data000Freq++.txt")
+    df0 = pd.read_csv(data0_path, sep='\s+')
     freq0 = df0.iloc[:, 0].values
     mag0 = df0.iloc[:, 1].values
     mask0 = freq0 > 0
@@ -34,7 +40,8 @@ def get_fit_params():
         if run_id in resistor_actuals:
             R_val = resistor_actuals[run_id]
             try:
-                df = pd.read_csv(f"Data{run_id:03d}Freq++.txt", sep='\s+')
+                data_path = os.path.join(DATA_DIR, f"Data{run_id:03d}Freq++.txt")
+                df = pd.read_csv(data_path, sep='\s+')
                 f, m = df.iloc[:, 0].values, df.iloc[:, 1].values
                 mask = f > 0
                 all_freqs.extend(f[mask]); all_mags.extend(m[mask]); all_Rs.extend([R_val] * np.sum(mask))

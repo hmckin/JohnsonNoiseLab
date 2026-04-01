@@ -7,27 +7,30 @@ This repo contains data and analysis scripts for an experiment at the University
 The objective of this project is to:
 1.  **Fit the Transfer Function**: Determine the frequency response $A(f)$ and $H(f, R, C_0)$ parameters of the measurement system.
 2.  **Extract Noise Levels**: Calculate the input-referred noise spectral density ($S_{Total}$) equivalent to the Johnson Noise of the Resistors + Current Noise from a Low-Noise Amplifier. Repeated for various resistor values and compared them with theoretical thermal noise ($4k_BTR$).
+## Results
+
+### Extracted Noise Spectral Density
+Below is the final extracted input-referred noise spectral density ($S_{Total}$) for various resistor values, compared against the theoretical thermal noise floor ($4k_BTR$).
+
+![Extracted Noise Total](images/extracted_noise_total.png)
 
 ## File Structure
 
-### Data Files
-- `Data000Freq++.txt`: Frequency response data used to fit the system's gain $A_0$ and corner frequencies $f_1, f_2$.
-- `Data001Freq++.txt` to `Data008Freq++.txt`: Frequency response measurements with different resistors (3k$\Omega$ to 10M$\Omega$) for $C_0$ extraction.
-- `Data009Freq++.txt` / `Data009Freq++2.txt`: Noise floor measurements (short circuit).
-- `Data010Freq++.txt` to `Data017Freq++.txt`: Noise measurements for various resistors.
-- `Resistor_Values.txt`: Mapping of run IDs to actual measured resistance values (in Ohms).
+### Project Root
+- `generate_plots.py`: Unified script to perform analysis and generate all project plots.
+- `extract_noise.py`: Module for extracting noise spectral density and calculating summary statistics.
+- `fit_transfer_func.py`: Core module for fitting the system transfer function $H(f)$.
 
-### Analysis Scripts
-- `fit_transfer_func.py`: Core module for fitting the system transfer function $H(f)$. It uses `scipy.optimize.curve_fit` to extract $A_0, f_1, f_2$, and $C_0$.
-- `extract_noise.py`: Script that calculates the input-referred noise by subtracting the noise floor and dividing by the squared transfer function.
-- `plot_transfer_function.py`: Visualizes the transfer function fits across multiple runs.
-- `plot_capacitance.py`: Analyzes and plots the capacitance-related effects.
-- `plot_noise_floor.py`: Visualizes the baseline noise floor of the system.
+### Data Directory (`data/`)
+- `Data000Freq++.txt` to `Data017Freq++.txt`: Raw measurement data.
+- `Resistor_Values.txt`: Measured resistance values for each run.
 
-### Generated Results (Plots)
-- `transfer_function_000_to_008.png`: Visualization of the initial transfer function fits.
-- `extracted_noise_total.png`: Final plot showing the noise spectral density vs theory.
-- `fit_capacitance.png` & `A_Transfer_Function.png`: Detailed fitting results.
+### Images Directory (`images/`)
+- `extracted_noise_total.png`: Plot of input-referred noise spectral density.
+- `A_Transfer_Function.png`: System transfer function $A(f)$ fit.
+- `transfer_function_000_to_008.png`: Overview of all measured transfer functions.
+- `noise_floor_009.png`: Baseline noise floor.
+
 
 ## Getting Started
 

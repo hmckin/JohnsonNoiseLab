@@ -5,6 +5,13 @@ import os
 from fit_transfer_func import transfer_func_A, transfer_func_H
 from extract_noise import get_noise_analysis_data
 
+# Configuration
+DATA_DIR = "data"
+IMAGE_DIR = "images"
+
+# Ensure image directory exists
+os.makedirs(IMAGE_DIR, exist_ok=True)
+
 def plot_all_transfer_functions():
     """Plots all raw transfer function magnitude data from Runs 000-008."""
     print("Generating transfer function overview plot (Runs 000-008)...")
@@ -21,8 +28,9 @@ def plot_all_transfer_functions():
     }
     plt.figure(figsize=(12, 8))
     for filename, label in mapping.items():
-        if os.path.exists(filename):
-            df = pd.read_csv(filename, sep='\s+')
+        data_path = os.path.join(DATA_DIR, filename)
+        if os.path.exists(data_path):
+            df = pd.read_csv(data_path, sep='\s+')
             plt.plot(df.iloc[:, 0], df.iloc[:, 1], label=label, alpha=0.8, linewidth=1)
     
     plt.title('Transfer Function Magnitude vs Frequency (Runs 000-008)', fontsize=14)
@@ -33,13 +41,14 @@ def plot_all_transfer_functions():
     plt.legend(title='Resistor', loc='best', fontsize='small', ncol=2)
     plt.grid(True, which="both", ls="-", alpha=0.5)
     plt.tight_layout()
-    plt.savefig('transfer_function_000_to_008.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'transfer_function_000_to_008.png'))
     plt.close()
 
 def plot_system_fit(params):
     """Plots the fit for the system transfer function A(f) using Data000."""
     print("Generating system fit plot A(f)...")
-    df0 = pd.read_csv("Data000Freq++.txt", sep='\s+')
+    data0_path = os.path.join(DATA_DIR, "Data000Freq++.txt")
+    df0 = pd.read_csv(data0_path, sep='\s+')
     f, m = df0.iloc[:, 0].values, df0.iloc[:, 1].values
     mask = f > 0
     
@@ -55,13 +64,16 @@ def plot_system_fit(params):
     plt.title('System Transfer Function $A(f)$ Fit')
     plt.legend()
     plt.grid(True, which="both", ls="-", alpha=0.5)
-    plt.savefig('A_Transfer_Function.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'A_Transfer_Function.png'))
     plt.close()
 
 def plot_noise_floor():
     """Plots the baseline noise floor (Run 009)."""
     print("Generating noise floor plot...")
-    noise_file = "Data009Freq++2.txt" if os.path.exists("Data009Freq++2.txt") else "Data009Freq++.txt"
+    noise_file2 = os.path.join(DATA_DIR, "Data009Freq++2.txt")
+    noise_file1 = os.path.join(DATA_DIR, "Data009Freq++.txt")
+    noise_file = noise_file2 if os.path.exists(noise_file2) else noise_file1
+    
     if os.path.exists(noise_file):
         df = pd.read_csv(noise_file, sep='\s+')
         plt.figure(figsize=(10, 6))
@@ -73,7 +85,7 @@ def plot_noise_floor():
         plt.ylabel('Magnitude')
         plt.grid(True, which="both", ls="-", alpha=0.5)
         plt.legend()
-        plt.savefig('noise_floor_009.png')
+        plt.savefig(os.path.join(IMAGE_DIR, 'noise_floor_009.png'))
         plt.close()
 
 def plot_noise_results(noise_data):
@@ -100,11 +112,11 @@ def plot_noise_results(noise_data):
     plt.grid(True, which="both", ls="-", alpha=0.5)
     plt.legend(ncol=2, fontsize='small')
     plt.tight_layout()
-    plt.savefig('extracted_noise_total.png')
+    plt.savefig(os.path.join(IMAGE_DIR, 'extracted_noise_total.png'))
     plt.close()
 
 if __name__ == "__main__":
-    # Get noise analysis data
+    # Get noise analysis data (this prints the summary table)
     noise_data, params = get_noise_analysis_data()
     
     # Perform plotting
@@ -113,4 +125,4 @@ if __name__ == "__main__":
     plot_noise_floor()
     plot_noise_results(noise_data)
     
-    print("\nAll plots have been generated successfully.")
+    print(f"\nAll plots have been generated successfully in the '{IMAGE_DIR}' folder.")

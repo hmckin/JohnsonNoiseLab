@@ -3,6 +3,9 @@ import pandas as pd
 import os
 from fit_transfer_func import get_fit_params, transfer_func_H
 
+# Configuration
+DATA_DIR = "data"
+
 # Constants
 k_B = 1.380649e-23
 T = 295  # Room temp approx 22C
@@ -10,7 +13,7 @@ T = 295  # Room temp approx 22C
 def extract_s_total(run_id, R_val, params, f_floor, s_out_floor):
     """Extracts S_total for a single run ID."""
     try:
-        filename = f"Data{run_id:03d}Freq++.txt"
+        filename = os.path.join(DATA_DIR, f"Data{run_id:03d}Freq++.txt")
         if not os.path.exists(filename):
             return None, None
             
@@ -37,9 +40,12 @@ def get_noise_analysis_data():
     resistor_actuals = params['resistor_actuals']
 
     # Load Noise Floor
-    noise_floor_file = "Data009Freq++2.txt" if os.path.exists("Data009Freq++2.txt") else "Data009Freq++.txt"
+    noise_floor_file2 = os.path.join(DATA_DIR, "Data009Freq++2.txt")
+    noise_floor_file1 = os.path.join(DATA_DIR, "Data009Freq++.txt")
+    noise_floor_file = noise_floor_file2 if os.path.exists(noise_floor_file2) else noise_floor_file1
+    
     if not os.path.exists(noise_floor_file):
-        print(f"Error: {noise_floor_file} not found.")
+        print(f"Error: Noise floor file not found.")
         return None, params
 
     floor_df = pd.read_csv(noise_floor_file, sep='\s+')
