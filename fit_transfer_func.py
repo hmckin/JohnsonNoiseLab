@@ -67,4 +67,4 @@ if __name__ == "__main__":
     print(f"A_0: {params['A_0']:.4f}")
     print(f"f1_sys: {params['f1']:.4f} Hz")
     print(f"f2_sys: {params['f2']:.4f} Hz")
-    print(f"Extracted C_0: {params['C_0']*1e12:.2f} pF")
+    print(f"Extracted C_0: {params['C_0'][0]*1e12:.2f} pF")

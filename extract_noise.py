@@ -8,7 +8,25 @@ DATA_DIR = "data"
 
 # Constants
 k_B = 1.380649e-23
-T = 295  # Room temp approx 22C
+T_ROOM = 295  # Room temp approx 22C for basic runs
+
+def calibrate_temp(t_measured):
+    """Calibrates temperature: 2C -> 0C, 98C -> 100C."""
+    t_true_c = (100 / 96) * (t_measured - 2)
+    return t_true_c + 273.15
+
+def get_temperature_mapping():
+    """Loads and calibrates temperatures from Temperature_Values.txt."""
+    temp_path = os.path.join(DATA_DIR, "Temperature_Values.txt")
+    if not os.path.exists(temp_path):
+        return {}
+    
+    df = pd.read_csv(temp_path, sep='\s+', comment='#', names=['Run_ID', 'T_init', 'T_final'])
+    mapping = {}
+    for _, row in df.iterrows():
+        t_avg_measured = (row['T_init'] + row['T_final']) / 2
+        mapping[int(row['Run_ID'])] = calibrate_temp(t_avg_measured)
+    return mapping
 
 def extract_s_total(run_id, R_val, params, f_floor, s_out_floor):
     """Extracts S_total for a single run ID."""
@@ -38,6 +56,7 @@ def get_noise_analysis_data():
     print("Fetching fit parameters...")
     params = get_fit_params()
     resistor_actuals = params['resistor_actuals']
+    temp_mapping = get_temperature_mapping()
 
     # Load Noise Floor
     noise_floor_file2 = os.path.join(DATA_DIR, "Data009Freq++2.txt")
@@ -56,31 +75,37 @@ def get_noise_analysis_data():
     summary_data = []
 
     print("\nProcessing runs and extracting noise levels...")
-    for run_id in range(10, 18):
+    # Process both Room Temp runs (10-17) and Temperature runs (18-29)
+    all_run_ids = list(range(10, 30)) 
+    
+    for run_id in all_run_ids:
         if run_id in resistor_actuals:
             R_val = resistor_actuals[run_id]
             f, s_total = extract_s_total(run_id, R_val, params, f_floor, s_out_floor)
             
             if f is not None:
-                s_th = 4 * k_B * T * R_val
+                # Determine Temperature
+                t_val = temp_mapping.get(run_id, T_ROOM)
+                s_th = 4 * k_B * t_val * R_val
                 
                 # Store for plotting
                 plot_data[run_id] = {
                     'f': f,
                     's_total': s_total,
                     's_th': s_th,
-                    'R_label': f'{R_val/1e3:.1f}k\u03a9'
+                    'T': t_val,
+                    'R_label': f'{R_val/1e3:.1f}k\u03a9, {t_val:.1f}K'
                 }
                 
                 # Summary Calculation (Average between 200Hz and 2kHz)
                 mask_flat = (f > 200) & (f < 2000)
                 avg_s = np.median(s_total[mask_flat])
-                summary_data.append((run_id, R_val/1e3, avg_s, s_th))
+                summary_data.append((run_id, R_val/1e3, t_val, avg_s, s_th))
 
     # Print Summary Table
-    print(f"\n{'Run':<5} {'R (kOhm)':<10} {'S_total (avg)':<15} {'4kTR (theory)':<15}")
-    for run_id, r_k, avg_s, s_th in summary_data:
-        print(f"{run_id:<5} {r_k:<10.2f} {avg_s:<15.2e} {s_th:<15.2e}")
+    print(f"\n{'Run':<5} {'R (kOhm)':<10} {'T (K)':<10} {'S_total (avg)':<15} {'4kTR (theory)':<15}")
+    for run_id, r_k, t_k, avg_s, s_th in summary_data:
+        print(f"{run_id:<5} {r_k:<10.2f} {t_k:<10.1f} {avg_s:<15.2e} {s_th:<15.2e}")
         
     return plot_data, params
 
